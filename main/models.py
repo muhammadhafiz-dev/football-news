@@ -17,7 +17,7 @@ class News(models.Model):
     category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='update')
     thumbnail = models.URLField(blank=True, null=True)
     news_views = models.PositiveIntegerField(default=0)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True) # Field created_at dan news_views tidak dimasukkan ke list fields didalam forms.py karena ditambahkan secara otomatis.
     is_featured = models.BooleanField(default=False)
     
     def __str__(self):
