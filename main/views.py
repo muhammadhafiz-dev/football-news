@@ -24,7 +24,7 @@ def show_main(request):
         news_list = News.objects.filter(user=request.user)
 
     context = {
-        'npm' : '240637994',
+        'npm' : '2406437994',
         'name': 'Muhammad Hafiz Hanan',
         'class': 'PBP B',
         'news_list': news_list,
@@ -33,6 +33,7 @@ def show_main(request):
 
     return render(request, "main.html", context)
 
+@login_required(login_url='/login')
 def create_news(request):
     form = NewsForm(request.POST or None)
 
