@@ -18,6 +18,13 @@ import datetime
 from django.http import HttpResponseRedirect
 from django.urls import reverse
 
+import requests
+
+import json
+from django.http import JsonResponse
+from main.models import News
+
+
 @login_required(login_url='/login')
 def show_main(request):
     filter_type = request.GET.get("filter", "all")  # default 'all'
@@ -188,3 +195,43 @@ def add_news_entry_ajax(request):
     new_news.save()
 
     return HttpResponse(b"CREATED", status=201)
+
+def proxy_image(request):
+    image_url = request.GET.get('url')
+    if not image_url:
+        return HttpResponse('No URL provided', status=400)
+    try:
+        response = requests.get(image_url, timeout=10)
+        response.raise_for_status()
+        return HttpResponse(
+            response.content,
+            content_type=response.headers.get('Content-Type', 'image/jpeg')
+        )
+    except requests.RequestException as e:
+        return HttpResponse(f'Error fetching image: {str(e)}', status=500)
+    
+@csrf_exempt
+def create_news_flutter(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        title = strip_tags(data.get("title", ""))
+        content = strip_tags(data.get("content", ""))
+        category = data.get("category", "")
+        thumbnail = data.get("thumbnail", "")
+        is_featured = data.get("is_featured", False)
+        user = request.user if request.user.is_authenticated else None
+        
+        new_news = News(
+            title=title, 
+            content=content,
+            category=category,
+            thumbnail=thumbnail,
+            is_featured=is_featured,
+            user=user
+        )
+        new_news.save()
+        
+        return JsonResponse({"status": "success"}, status=200)
+    else:
+        return JsonResponse({"status": "error"}, status=401)
+
